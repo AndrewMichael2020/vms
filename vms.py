@@ -1,3 +1,29 @@
+import re
+def explain_terraform_error(stderr):
+    """Parse Terraform/GCP error output and print actionable hints."""
+    error_patterns = [
+        (
+            r"Error 403:.*API has not been used in project (.+?) before or it is disabled",
+            "A required GCP API is not enabled for your project. Visit the link in the error message to enable it, then retry."
+        ),
+        (
+            r"Error 403:.*permission",
+            "You do not have the required permissions. Ensure your account/service account has the necessary IAM roles."
+        ),
+        (
+            r"Error 400: The resource 'projects/.+?/global/networks/.+?' is not ready, resourceNotReady",
+            "A network resource is still being deleted or is in a pending state. Wait a few minutes and try again."
+        ),
+        (
+            r"Could not find image or family",
+            "The specified VM image or family does not exist. Check your image settings in terraform.tfvars."
+        ),
+        # Add more patterns as needed
+    ]
+    for pattern, explanation in error_patterns:
+        if re.search(pattern, stderr, re.IGNORECASE):
+            print(f"\n{Fore.YELLOW}Hint: {explanation}{Style.RESET_ALL}\n")
+            break
 #!/usr/bin/env python3
 """
 VMS - GCP Data Science Workstation CLI
@@ -169,16 +195,22 @@ def provision():
         # Initialize Terraform
         print(f"{Fore.YELLOW}Initializing Terraform...{Style.RESET_ALL}")
         subprocess.run(["terraform", "init"], check=True)
-        
+
         # Apply Terraform configuration
         print(f"{Fore.YELLOW}Applying Terraform configuration...{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}You will be prompted for required configuration values.{Style.RESET_ALL}")
-        subprocess.run(["terraform", "apply"], check=True)
-        
+        result = subprocess.run(["terraform", "apply"], capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"{Fore.RED}✗ Provisioning failed{Style.RESET_ALL}")
+            explain_terraform_error(result.stderr or result.stdout)
+            return
+
         print(f"{Fore.GREEN}✓ Provisioning complete!{Style.RESET_ALL}")
-        
-    except subprocess.CalledProcessError:
+
+    except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}✗ Provisioning failed{Style.RESET_ALL}")
+        if hasattr(e, 'stderr') and e.stderr:
+            explain_terraform_error(e.stderr)
         return
 
 
@@ -201,11 +233,17 @@ def destroy():
     
     try:
         print(f"{Fore.YELLOW}Destroying resources...{Style.RESET_ALL}")
-        subprocess.run(["terraform", "destroy"], check=True)
+        result = subprocess.run(["terraform", "destroy"], capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"{Fore.RED}✗ Destroy failed{Style.RESET_ALL}")
+            explain_terraform_error(result.stderr or result.stdout)
+            return
         print(f"{Fore.GREEN}✓ Resources destroyed{Style.RESET_ALL}")
-        
-    except subprocess.CalledProcessError:
+
+    except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}✗ Destroy failed{Style.RESET_ALL}")
+        if hasattr(e, 'stderr') and e.stderr:
+            explain_terraform_error(e.stderr)
         return
     
     # Offer information about deleting the entire project
