@@ -44,21 +44,11 @@ def check_prerequisites():
     except FileNotFoundError:
         missing_tools.append("terraform")
     
-    # Check gcloud
-    try:
-        result = subprocess.run(["gcloud", "version"], capture_output=True, text=True)
-        if result.returncode != 0:
-            missing_tools.append("gcloud")
-    except FileNotFoundError:
-        missing_tools.append("gcloud")
-    
     if missing_tools:
         print(f"{Fore.RED}Missing required tools: {', '.join(missing_tools)}{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}To install missing tools:{Style.RESET_ALL}")
         if "terraform" in missing_tools:
             print(f"  - Terraform: Run {Fore.GREEN}bash scripts/setup.sh{Style.RESET_ALL}")
-        if "gcloud" in missing_tools:
-            print(f"  - gcloud CLI: Visit https://cloud.google.com/sdk/docs/install")
         return False
     
     print(f"{Fore.GREEN}✓ All prerequisites met{Style.RESET_ALL}")
@@ -120,16 +110,15 @@ def setup():
             except subprocess.CalledProcessError:
                 print(f"{Fore.RED}✗ Failed to install Terraform{Style.RESET_ALL}")
     
-    # Check if gcloud is installed
-    try:
-        subprocess.run(["gcloud", "version"], capture_output=True, check=True)
-        print(f"{Fore.GREEN}✓ gcloud CLI already installed{Style.RESET_ALL}")
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        print(f"{Fore.YELLOW}gcloud CLI is not installed.{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}Please install it from: https://cloud.google.com/sdk/docs/install{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}After installation, run: gcloud auth login{Style.RESET_ALL}")
-    
     print(f"{Fore.GREEN}Setup complete!{Style.RESET_ALL}")
+    print()
+    print(f"{Fore.CYAN}GCP Authentication Setup:{Style.RESET_ALL}")
+    print(f"For GCP access, you can use any of these methods:")
+    print(f"  1. {Fore.GREEN}Service Account Key:{Style.RESET_ALL} Set GOOGLE_APPLICATION_CREDENTIALS environment variable")
+    print(f"  2. {Fore.GREEN}User Account:{Style.RESET_ALL} Use 'gcloud auth application-default login' (requires gcloud)")
+    print(f"  3. {Fore.GREEN}Workload Identity:{Style.RESET_ALL} For cloud environments (GCE, Cloud Shell, etc.)")
+    print()
+    print(f"{Fore.YELLOW}Recommended:{Style.RESET_ALL} Create a service account with necessary permissions and download the JSON key file.")
 
 
 @cli.command()
@@ -219,18 +208,21 @@ def destroy():
         print(f"{Fore.RED}✗ Destroy failed{Style.RESET_ALL}")
         return
     
-    # Offer to delete the entire project
-    if confirm_action("Delete the entire GCP project? (IRREVERSIBLE!)", False):
-        project_id = input(f"{Fore.YELLOW}Enter project ID to delete: {Style.RESET_ALL}").strip()
-        
-        if project_id and confirm_action(f"Are you absolutely sure you want to delete project '{project_id}'?", False):
-            try:
-                subprocess.run(["gcloud", "projects", "delete", project_id], check=True)
-                print(f"{Fore.GREEN}✓ Project '{project_id}' deleted{Style.RESET_ALL}")
-            except subprocess.CalledProcessError:
-                print(f"{Fore.RED}✗ Failed to delete project{Style.RESET_ALL}")
-        else:
-            print("Project deletion cancelled.")
+    # Offer information about deleting the entire project
+    print()
+    print(f"{Fore.YELLOW}Optional: Complete Project Cleanup{Style.RESET_ALL}")
+    print("To completely remove the GCP project and all associated resources:")
+    print()
+    print("Using GCP Console:")
+    print(f"  1. Go to {Fore.BLUE}https://console.cloud.google.com/iam-admin/projects{Style.RESET_ALL}")
+    print("  2. Find your project and click the delete button")
+    print("  3. Confirm deletion by typing the project ID")
+    print()
+    print("Using gcloud CLI (if installed):")
+    print("  1. List projects: gcloud projects list")
+    print("  2. Delete project: gcloud projects delete PROJECT_ID")
+    print()
+    print(f"{Fore.CYAN}Note: Project deletion is permanent and irreversible!{Style.RESET_ALL}")
 
 
 @cli.command()
