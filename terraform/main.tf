@@ -120,7 +120,7 @@ resource "google_compute_instance" "vm_instance" {
   boot_disk {
     initialize_params {
       # Windows Server 2022 Datacenter
-      image = "windows-server-2022-dc-v20231214"
+      image = "projects/windows-cloud/global/images/family/windows-2022"
       type  = var.disk_type
       size  = var.disk_size_gb
     }
