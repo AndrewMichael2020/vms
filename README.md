@@ -41,9 +41,27 @@ cd vms
 ## Prerequisites
 
 - Python 3.7+
-- gcloud CLI installed and authenticated
 - GCP billing account and organization access
 - Terraform (or run `bash scripts/setup.sh` to install on Linux)
+- GCP authentication (see Authentication section below)
+
+## Authentication
+
+VMS supports multiple GCP authentication methods (no gcloud required):
+
+### Method 1: Service Account (Recommended)
+1. Create a service account in GCP Console with these roles:
+   - Project Creator
+   - Billing Account User  
+   - Compute Admin
+2. Download the JSON key file
+3. Set environment variable: `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/keyfile.json`
+
+### Method 2: User Account
+If you have gcloud installed: `gcloud auth application-default login`
+
+### Method 3: Workload Identity
+Automatically works in GCP environments (Cloud Shell, GCE instances, etc.)
 
 ## Commands
 
@@ -91,8 +109,9 @@ Always clean up resources when done:
 # Remove all resources but keep project
 python3 vms.py destroy
 
-# Or delete entire project (irreversible!)
-# Follow prompts during destroy command
+# To delete entire project manually:
+# 1. Via GCP Console: https://console.cloud.google.com/iam-admin/projects
+# 2. Via gcloud (if installed): gcloud projects delete PROJECT_ID
 ```
 
 ## Support
