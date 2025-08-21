@@ -12,6 +12,8 @@ import click
 from pathlib import Path
 from colorama import init, Fore, Style
 from tabulate import tabulate
+from google.cloud import resourcemanager_v3
+from google.auth import default
 
 # Initialize colorama for cross-platform colored output
 init()
@@ -44,21 +46,11 @@ def check_prerequisites():
     except FileNotFoundError:
         missing_tools.append("terraform")
     
-    # Check gcloud
-    try:
-        result = subprocess.run(["gcloud", "version"], capture_output=True, text=True)
-        if result.returncode != 0:
-            missing_tools.append("gcloud")
-    except FileNotFoundError:
-        missing_tools.append("gcloud")
-    
     if missing_tools:
         print(f"{Fore.RED}Missing required tools: {', '.join(missing_tools)}{Style.RESET_ALL}")
         print(f"{Fore.YELLOW}To install missing tools:{Style.RESET_ALL}")
         if "terraform" in missing_tools:
             print(f"  - Terraform: Run {Fore.GREEN}bash scripts/setup.sh{Style.RESET_ALL}")
-        if "gcloud" in missing_tools:
-            print(f"  - gcloud CLI: Visit https://cloud.google.com/sdk/docs/install")
         return False
     
     print(f"{Fore.GREEN}✓ All prerequisites met{Style.RESET_ALL}")
@@ -74,6 +66,31 @@ def confirm_action(message, default=False):
         return default
     
     return response in ['y', 'yes']
+
+
+def delete_gcp_project(project_id):
+    """Delete a GCP project using the Resource Manager API"""
+    try:
+        # Get default credentials
+        credentials, _ = default()
+        
+        # Create Resource Manager client
+        client = resourcemanager_v3.ProjectsClient(credentials=credentials)
+        
+        # Delete the project
+        request = resourcemanager_v3.DeleteProjectRequest(name=f"projects/{project_id}")
+        operation = client.delete_project(request=request)
+        
+        print(f"{Fore.YELLOW}Project deletion initiated. This may take a few minutes...{Style.RESET_ALL}")
+        
+        # Wait for operation to complete
+        result = operation.result(timeout=300)  # 5 minute timeout
+        
+        return True
+        
+    except Exception as e:
+        print(f"{Fore.RED}Error deleting project: {str(e)}{Style.RESET_ALL}")
+        return False
 
 
 @click.group()
@@ -120,16 +137,12 @@ def setup():
             except subprocess.CalledProcessError:
                 print(f"{Fore.RED}✗ Failed to install Terraform{Style.RESET_ALL}")
     
-    # Check if gcloud is installed
-    try:
-        subprocess.run(["gcloud", "version"], capture_output=True, check=True)
-        print(f"{Fore.GREEN}✓ gcloud CLI already installed{Style.RESET_ALL}")
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        print(f"{Fore.YELLOW}gcloud CLI is not installed.{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}Please install it from: https://cloud.google.com/sdk/docs/install{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}After installation, run: gcloud auth login{Style.RESET_ALL}")
-    
     print(f"{Fore.GREEN}Setup complete!{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Authentication setup:{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}  For GCP authentication, you can use:{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}  - Service account key file (set GOOGLE_APPLICATION_CREDENTIALS env var){Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}  - Application Default Credentials (gcloud auth application-default login){Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}  - Or run: export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json{Style.RESET_ALL}")
 
 
 @cli.command()
@@ -224,10 +237,9 @@ def destroy():
         project_id = input(f"{Fore.YELLOW}Enter project ID to delete: {Style.RESET_ALL}").strip()
         
         if project_id and confirm_action(f"Are you absolutely sure you want to delete project '{project_id}'?", False):
-            try:
-                subprocess.run(["gcloud", "projects", "delete", project_id], check=True)
-                print(f"{Fore.GREEN}✓ Project '{project_id}' deleted{Style.RESET_ALL}")
-            except subprocess.CalledProcessError:
+            if delete_gcp_project(project_id):
+                print(f"{Fore.GREEN}✓ Project '{project_id}' deletion initiated{Style.RESET_ALL}")
+            else:
                 print(f"{Fore.RED}✗ Failed to delete project{Style.RESET_ALL}")
         else:
             print("Project deletion cancelled.")

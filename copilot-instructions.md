@@ -9,13 +9,11 @@ This Terraform configuration provisions a secure, data science-ready Windows VM 
 
 Terraform (or run bash setup.sh to install on Linux)
 
-gcloud CLI
+GCP authentication (service account key file or Application Default Credentials)
 
 Have your GCP billing account ID ready
-(To list: gcloud beta billing accounts list)
 
 Have your GCP organization ID ready
-(To list: gcloud organizations list)
 
 Make sure you have permissions to create projects and resources in your GCP organization
 
@@ -50,7 +48,6 @@ After VM Creation
 RDP/SSH Access: Use the external IP and your credentials.
 Windows Admin Password:
 During terraform apply, you will be prompted for a Windows admin password (or leave blank to auto-generate).
-The password will be set automatically using gcloud compute reset-windows-password after the VM is provisioned.
 The password (if set) will be output as a sensitive Terraform output. If left blank, check your CLI output for the generated password.
 Power BI Installation:
 On first login, open Edge/Chrome and download Power BI Desktop from https://powerbi.microsoft.com/desktop
@@ -61,13 +58,7 @@ To delete all resources, including the VM, disks, and the project itself:
 cd terraform
 terraform destroy
 # Or, to delete the entire project (irreversible!):
-echo "Would you like to destroy project NEW_PROJECT_ID and all its dependencies? (yes/no)"
-read confirm
-if [ "$confirm" = "yes" ]; then
-	gcloud projects delete NEW_PROJECT_ID
-else
-	echo "Project deletion cancelled."
-fi
+# Use the VMS CLI: python3 vms.py destroy
 Notes
 The attached 50GB SSD disk is mounted as a secondary drive (D:). Use it for data storage.
 All network access is restricted to your IP for safety.

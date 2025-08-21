@@ -41,9 +41,9 @@ cd vms
 ## Prerequisites
 
 - Python 3.7+
-- gcloud CLI installed and authenticated
-- GCP billing account and organization access
 - Terraform (or run `bash scripts/setup.sh` to install on Linux)
+- GCP authentication (service account key file or Application Default Credentials)
+- GCP billing account and organization access
 
 ## Commands
 
