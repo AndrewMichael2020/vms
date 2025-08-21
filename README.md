@@ -1,4 +1,4 @@
-# VMS - GCP Data Science Workstation
+# VMS - GCP Data Science Workstation - personal utility
 
 A lean CLI app for creating and managing secure, data science-ready Windows VMs in GCP with Terraform.
 
@@ -11,16 +11,9 @@ A lean CLI app for creating and managing secure, data science-ready Windows VMs 
 - **User-Friendly**: Confirmation prompts before any destructive actions
 - **Automated Setup**: One-command installation and deployment
 
-## Quick Start
 
-### Option 1: Interactive Menu
-```bash
-git clone <this-repo>
-cd vms
-./quickstart.sh
-```
+## Quick Start (GCP CLI Only)
 
-### Option 2: Direct Commands
 1. **Clone and setup**:
    ```bash
    git clone <this-repo>
@@ -37,6 +30,20 @@ cd vms
    ```bash
    python3 vms.py provision
    ```
+
+4. **Destroy all resources (GCP CLI only)**:
+   ```bash
+   python3 vms.py destroy
+   ```
+
+**Note:** All commands above are run in GCP Cloud Shell or any environment with gcloud and Terraform installed and authenticated. No service account key is required if you use Cloud Shell or gcloud auth application-default login.
+
+### Troubleshooting
+
+- If you see errors about missing APIs (e.g., Compute Engine API, Cloud Resource Manager API, Cloud Billing API), enable them in the GCP Console for your project.
+- If you see permission errors, ensure your user has the required IAM roles (Project Creator, Billing Manager, Compute Admin).
+- If you see 'bc: command not found', run `sudo apt-get install -y bc` in Cloud Shell.
+- For image errors, use the correct image family and project, e.g., `projects/windows-cloud/global/images/family/windows-2022` for Windows Server 2022.
 
 ## Prerequisites
 
@@ -85,6 +92,7 @@ Regular instances start from ~$5/month for basic usage. Spot instances provide 6
 
 ## Cleanup
 
+
 Always clean up resources when done:
 
 ```bash
@@ -94,6 +102,15 @@ python3 vms.py destroy
 # Or delete entire project (irreversible!)
 # Follow prompts during destroy command
 ```
+
+**Troubleshooting destroy issues:**
+
+- If `python3 vms.py destroy` hangs or fails to delete the VPC network, it usually means there are still resources (such as subnets, firewall rules, or static IPs) attached to the network.
+- **Remediation:**
+   1. Go to the GCP Console > VPC network > VPC networks.
+   2. Check for any remaining subnets, firewall rules, or static IPs associated with your custom network (not the default network).
+   3. Delete these resources manually if they remain.
+   4. Retry `python3 vms.py destroy` to complete cleanup.
 
 ## Support
 
