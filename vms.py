@@ -120,6 +120,15 @@ def setup():
             except subprocess.CalledProcessError:
                 print(f"{Fore.RED}✗ Failed to install Terraform{Style.RESET_ALL}")
     
+    # Check if gcloud is installed
+    try:
+        subprocess.run(["gcloud", "version"], capture_output=True, check=True)
+        print(f"{Fore.GREEN}✓ gcloud CLI already installed{Style.RESET_ALL}")
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        print(f"{Fore.YELLOW}gcloud CLI is not installed.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Please install it from: https://cloud.google.com/sdk/docs/install{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}After installation, run: gcloud auth login{Style.RESET_ALL}")
+    
     print(f"{Fore.GREEN}Setup complete!{Style.RESET_ALL}")
 
 
