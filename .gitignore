@@ -1,0 +1,119 @@
+# VMS - Comprehensive .gitignore
+# Exclude files larger than 1MB, OS images, and sensitive data
+
+# Large files and OS images
+*.iso
+*.img
+*.vhd
+*.vmdk
+*.qcow2
+*.ova
+*.ovf
+
+# Any file larger than 1MB (common large file extensions)
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.msi
+*.exe
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# GCP and sensitive data
+*.json
+service-account.json
+gcp-credentials.json
+credentials/
+secrets/
+.gcp/
+
+# SSH keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+known_hosts
+
+# Backup files
+*.bak
+*.backup
+*.old
