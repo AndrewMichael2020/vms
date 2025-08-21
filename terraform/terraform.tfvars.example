@@ -1,0 +1,23 @@
+# Example VMS Configuration
+# Copy this file to terraform.tfvars and customize for your needs
+
+# VM Configuration
+machine_type = "e2-standard-4"    # Recommended: e2-standard-4 or n2-standard-4
+preemptible = false               # Set to true for 60-91% cost savings (spot instance)
+
+# Disk Configuration  
+disk_type = "pd-balanced"         # Options: pd-standard, pd-balanced, pd-ssd
+disk_size_gb = 100               # Minimum 50, recommended 100+
+attached_disk_size_gb = 50       # Additional SSD storage (D: drive)
+
+# GCP Configuration (will be prompted during terraform apply)
+# project_id = ""                  # Leave empty to auto-generate
+# project_name = "vms-workstation" # Default project name
+# billing_account_id = ""          # Required: Your GCP billing account ID
+# org_id = ""                      # Required: Your GCP organization ID
+
+# Optional Configuration
+region = "us-central1"            # GCP region
+zone = "us-central1-a"           # GCP zone
+# windows_admin_password = ""      # Leave empty to auto-generate
+# allowed_ip_ranges = []           # Leave empty to use your current IP

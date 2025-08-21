@@ -13,6 +13,14 @@ A lean CLI app for creating and managing secure, data science-ready Windows VMs 
 
 ## Quick Start
 
+### Option 1: Interactive Menu
+```bash
+git clone <this-repo>
+cd vms
+./quickstart.sh
+```
+
+### Option 2: Direct Commands
 1. **Clone and setup**:
    ```bash
    git clone <this-repo>
